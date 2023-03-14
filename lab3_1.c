@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
         printf("My child's PID is %d\n", child_pid);
         while (waitpid(child_pid, &status, WNOHANG) == 0) {
             printf("Waiting for Program 1 to finish...\n");
-            sleep(1);
+            usleep(500000); // 0.5 second
         }
         if (WIFEXITED(status)) {
             printf("Program 1 exited with code %d\n", WEXITSTATUS(status));
