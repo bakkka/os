@@ -4,35 +4,37 @@
 #include <sys/wait.h>
 
 int main(int argc, char *argv[]) {
-    printf("Program 2 started\n");
-    printf("Parent process ID: %d\n", getpid());
-    pid_t pid = fork();
-    if (pid == 0) {
-        printf("Child process ID: %d\n", getpid());
-        char *args[argc + 1];
-        for (int i = 0; i < argc; i++) {
-            args[i] = argv[i];
-        }
-        args[argc] = NULL;
-        char *envp[] = {NULL};
-        execle("./program1", "./program1", args, envp);
-        printf("Error: execle failed\n");
+    pid_t parent_pid = getpid();
+    pid_t child_pid;
+    int status;
+
+    printf("Program 2:\n");
+    printf("My PID is %d\n", parent_pid);
+
+    child_pid = fork();
+
+    if (child_pid == -1) {
+        perror("fork");
         exit(1);
-    } else if (pid > 0) {
-        int status;
-        while (waitpid(pid, &status, WNOHANG) == 0) {
-            printf("Waiting for child process to finish...\n");
+    }
+
+    if (child_pid == 0) {
+        char *envp[] = { NULL }; // пустой массив переменных окружения
+        printf("Running Program 1 as a child process...\n");
+        execle("./lab3_1", "lab3_1", argv[1], argv[2], NULL, envp);
+        perror("exec");
+        exit(1);
+    } else {
+        printf("My child's PID is %d\n", child_pid);
+        while (waitpid(child_pid, &status, WNOHANG) == 0) {
+            printf("Waiting for Program 1 to finish...\n");
             usleep(500000); // 0.5 second
         }
         if (WIFEXITED(status)) {
-            printf("Child process exited with code %d\n", WEXITSTATUS(status));
-        } else if (WIFSIGNALED(status)) {
-            printf("Child process terminated by signal %d\n", WTERMSIG(status));
+            printf("Program 1 exited with code %d\n", WEXITSTATUS(status));
         }
-    } else {
-        printf("Error: fork failed\n");
-        exit(1);
     }
-    printf("Program 2 finished\n");
+
+    printf("Program 2 is exiting.\n");
     return 0;
 }
