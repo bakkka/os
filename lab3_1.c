@@ -73,4 +73,12 @@ g++ -o lab3_1 lab3_1.o
 g++ -c lab3_2.c
 g++ -o lab3_2 lab3_2.o 
 
-
+        char *args[argc + 1];
+        for (int i = 0; i < argc; i++) {
+            args[i] = argv[i];
+        }
+        args[argc] = NULL;
+        char *envp[] = {NULL};
+        execle("./program1", "./program1", args, envp);
+        printf("Error: execle failed\n");
+        exit(1);    
