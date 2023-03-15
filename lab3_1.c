@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
         printf("%s\n", argv[i]);
         sleep(1);
     }
-  char* env_value = getenv("MY_ENV_VAR"); // замените "MY_ENV_VAR" на имя вашей переменной окружения
+  char* env_value = getenv("MY_ENV_VAR");
   if (env_value != NULL) {
     printf("Значение переменной окружения: %s\n", env_value);
   } else {
