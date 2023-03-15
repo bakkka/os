@@ -15,6 +15,12 @@ int main(int argc, char *argv[]) {
         printf("%s\n", argv[i]);
         sleep(1);
     }
+  char* env_value = getenv("MY_ENV_VAR"); // замените "MY_ENV_VAR" на имя вашей переменной окружения
+  if (env_value != NULL) {
+    printf("Значение переменной окружения: %s\n", env_value);
+  } else {
+    printf("Переменная окружения не установлена\n");
+  }
 
     int exit_code = 42;
     printf("Program 1 is exiting with code %d\n", exit_code);
