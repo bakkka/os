@@ -12,6 +12,9 @@ int main(int argc, char *argv[]) {
     printf("My PID is %d\n", parent_pid);
 
     child_pid = fork();
+    
+    char *env_var = "MY_ENV_VAR=Hello from parent!";
+    char *envp[] = { env_var, NULL }; // передача переменной окружения в потомка
 
     if (child_pid == -1) {
         perror("fork");
@@ -19,9 +22,9 @@ int main(int argc, char *argv[]) {
     }
 
     if (child_pid == 0) {
-        char *envp[] = { NULL }; // пустой массив переменных окружения
+        char *envp_child[] = { env_var, NULL }; // передача переменной окружения в потомка
         printf("Running Program 1 as a child process...\n");
-        execle("./lab3_1", "lab3_1", argv[1], argv[2], NULL, envp);
+        execle("./lab3_1", "/lab3_1", "test1", "test2", NULL, envp_child);
         perror("exec");
         exit(1);
     } else {
