@@ -30,8 +30,9 @@ int main()
 
     char myChar = '1';
     int count = 0;
-
-    while(count < 5) // Записываем символ 5 раз
+    
+    while(1){
+        while(count < 5) // Записываем символ 5 раз
     {
         sem_wait(mySemaphore); // Захватываем семафор
 
@@ -44,6 +45,32 @@ int main()
 
         usleep(500000); // Ждем полсекунды
     }
+
+        fd_set fds;
+        struct timeval tv;
+        int retval;
+        FD_ZERO(&fds);
+        FD_SET(STDIN_FILENO, &fds);
+        tv.tv_sec = 0;
+        tv.tv_usec = 0;
+        retval = select(STDIN_FILENO + 1, &fds, NULL, NULL, &tv);
+        if (retval == -1)
+        {
+            perror("select()");
+            exit(EXIT_FAILURE);
+        }
+        else if (retval)
+        {
+            int c = getchar();
+            if (c == 'q')
+            {
+                break;
+            }
+        }
+
+        usleep(500000);
+    }
+    
 
     fclose(outFile);
 
