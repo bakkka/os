@@ -29,48 +29,58 @@ int main()
     }
 
     char myChar = '1';
-    int count = 0;
-    
-    while(1){
-        while(count < 5) // Записываем символ 5 раз
+    char buffer[2];
+
+    fd_set readset; // Создаем набор дескрипторов для функции select
+    FD_ZERO(&readset); // Обнуляем набор
+
+    FD_SET(fileno(stdin), &readset); // Добавляем дескриптор стандартного потока ввода
+
+    while(1)
     {
-        sem_wait(mySemaphore); // Захватываем семафор
-
-        fprintf(outFile, "%c\n", myChar); // Пишем символ в файл
-        printf("%c\n", myChar); // Выводим символ на экран
-
-        count++; // Увеличиваем счетчик записанных символов
-
-        sem_post(mySemaphore); // Освобождаем семафор
-
-        usleep(500000); // Ждем полсекунды
-    }
-
-        fd_set fds;
-        struct timeval tv;
-        int retval;
-        FD_ZERO(&fds);
-        FD_SET(STDIN_FILENO, &fds);
-        tv.tv_sec = 0;
-        tv.tv_usec = 0;
-        retval = select(STDIN_FILENO + 1, &fds, NULL, NULL, &tv);
-        if (retval == -1)
+        for(int i=0; i<10; i++)
         {
-            perror("select()");
-            exit(EXIT_FAILURE);
+            fprintf(outFile, "%c", myChar); // Пишем символ в файл
+            printf("%c", myChar); // Выводим символ на экран
+            fflush(stdout); // Сбрасываем буфер
+
+            usleep(100000); // Задержка 100 миллисекунд
         }
-        else if (retval)
+
+        fprintf(outFile, "\n");
+        printf("\n");
+
+        // Освобождаем семафор, чтобы программа "2" могла его захватить и записать символ "2" 10 раз
+        sem_post(mySemaphore);
+
+        // Ждем пока программа "2" не завершит свою итерацию и не отправит сигнал семафору
+        sem_wait(mySemaphore);
+
+        // Меняем символ на "2", чтобы программа "2" смогла записать его в следующей итерации
+        myChar = '2';
+
+        // Ждем пока произойдет изменение во входных данных на стандартном потоке ввода или произойдет изменение на другом дескрипторе в течение 500 миллисекунд
+        struct timeval timeout;
+        timeout.tv_sec = 0;
+        timeout.tv_usec = 500000;
+
+        int result = select(fileno(stdin) + 1, &readset, NULL, NULL, &timeout);
+
+        if(result == -1)
         {
-            int c = getchar();
-            if (c == 'q')
+            printf("Select Error!\n");
+            return -1;
+        }
+        else if(result)
+        {
+            fgets(buffer, 2, stdin);
+
+            if(buffer[0] == 'q') // Проверяем, на какой клавише нажали, если на "q", то завершаем работу программы
             {
                 break;
             }
         }
-
-        usleep(500000);
     }
-    
 
     fclose(outFile);
 
@@ -114,27 +124,58 @@ int main()
         return -1;
     }
 
-    char myChar = '2';
+     char myChar = '2';
+    char buffer[2];
+
+    fd_set readset; // Создаем набор дескрипторов для функции select
+    FD_ZERO(&readset); // Обнуляем набор
+
+    FD_SET(fileno(stdin), &readset); // Добавляем дескриптор стандартного потока ввода
 
     while(1)
     {
-        sem_wait(mySemaphore); // Захватываем семафор
-
-        fprintf(outFile, "%c\n", myChar); // Пишем символ в файл
-        printf("%c\n", myChar); // Выводим символ на экран
-
-        if(myChar == '1')
+        for(int i=0; i<10; i++)
         {
-            myChar = '2'; // Меняем символ на "2"
-        }
-        else
-        {
-            myChar = '1'; // Меняем символ на "1"
+            fprintf(outFile, "%c", myChar); // Пишем символ в файл
+            printf("%c", myChar); // Выводим символ на экран
+            fflush(stdout); // Сбрасываем буфер
+
+            usleep(100000); // Задержка 100 миллисекунд
         }
 
-        sem_post(mySemaphore); // Освобождаем семафор
+        fprintf(outFile, "\n");
+        printf("\n");
 
-        usleep(500000); // Ждем полсекунды
+        // Освобождаем семафор, чтобы программа "1" могла его захватить и записать символ "1" 10 раз
+        sem_post(mySemaphore);
+
+        // Ждем пока программа "1" не завершит свою итерацию и не отправит сигнал семафору
+        sem_wait(mySemaphore);
+
+        // Меняем символ на "1", чтобы программа "1" смогла записать его в следующей итерации
+        myChar = '1';
+
+        // Ждем пока произойдет изменение во входных данных на стандартном потоке ввода или произойдет изменение на другом дескрипторе в течение 500 миллисекунд
+        struct timeval timeout;
+        timeout.tv_sec = 0;
+        timeout.tv_usec = 500000;
+
+        int result = select(fileno(stdin) + 1, &readset, NULL, NULL, &timeout);
+
+        if(result == -1)
+        {
+            printf("Select Error!\n");
+            return -1;
+        }
+        else if(result)
+        {
+            fgets(buffer, 2, stdin);
+
+            if(buffer[0] == 'q') // Проверяем, на какой клавише нажали, если на "q", то завершаем работу программы
+            {
+                break;
+            }
+        }
     }
 
     fclose(outFile);
