@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <semaphore.h>
 #include <string.h>
+#include <sys/select.h>
 
 #define FILENAME "myFile.txt"
 
@@ -11,7 +12,7 @@ int main()
 {
     sem_t *mySemaphore;
 
-    mySemaphore = sem_open("/mySemaphore", O_CREAT, S_IWUSR | S_IRUSR, 1); // Создаем семафор с именем "/mySemaphore"
+    mySemaphore = sem_open("/mySemaphore", O_CREAT, S_IWUSR | S_IRUSR, 0); // Создаем семафор с именем "/mySemaphore" и инициализируем его 0
 
     if(mySemaphore == SEM_FAILED)
     {
@@ -48,7 +49,6 @@ int main()
         }
 
         fprintf(outFile, "\n");
-        printf("\n");
 
         // Освобождаем семафор, чтобы программа "2" могла его захватить и записать символ "2" 10 раз
         sem_post(mySemaphore);
@@ -56,8 +56,8 @@ int main()
         // Ждем пока программа "2" не завершит свою итерацию и не отправит сигнал семафору
         sem_wait(mySemaphore);
 
-        // Меняем символ на "2", чтобы программа "2" смогла записать его в следующей итерации
-        myChar = '2';
+        // Меняем символ на "1", чтобы программа могла записать его в следующей итерации
+        myChar = '1';
 
         // Ждем пока произойдет изменение во входных данных на стандартном потоке ввода или произойдет изменение на другом дескрипторе в течение 500 миллисекунд
         struct timeval timeout;
@@ -77,7 +77,10 @@ int main()
 
             if(buffer[0] == 'q') // Проверяем, на какой клавише нажали, если на "q", то завершаем работу программы
             {
-                break;
+                fclose(outFile);
+                sem_close(mySemaphore);
+                sem_unlink("/mySemaphore");
+                return 0;
             }
         }
     }
