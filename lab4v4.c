@@ -36,10 +36,9 @@ int main() {
             usleep(10000);
         }
         write(fd, buffer, 10);
-        sem_post(sem);
-        sem_wait(sem);
-        if (getchar() != EOF) {
-            break;
+        if (sem_post(sem) == -1) {
+            perror("sem_post");
+            exit(1);
         }
     }
 
