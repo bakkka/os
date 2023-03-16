@@ -29,16 +29,25 @@ int main() {
     }
 
     while (1) {
-        for (i = 0; i < 10; i++) {
-            printf("1");
-            fflush(stdout);
-            buffer[i] = '1';
-            usleep(10000);
+        if (sem_wait(sem) == -1) {
+            perror("sem_wait");
+            exit(EXIT_FAILURE);
         }
-        write(fd, buffer, 10);
+        
+        // Write 10 '1's to the file
+        for (int i = 0; i < 10; i++) {
+            if (write(fd, "1", 1) == -1) {
+                perror("write");
+                exit(EXIT_FAILURE);
+            }
+            printf("1");
+            fflush(stdout); // Ensure that the output is immediately visible on the terminal
+        }
+        
+        // Release the semaphore so that the other program can continue
         if (sem_post(sem) == -1) {
             perror("sem_post");
-            exit(1);
+            exit(EXIT_FAILURE);
         }
     }
 
