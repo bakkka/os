@@ -10,9 +10,11 @@
 #define FILE_NAME "text.txt"
 
 int main() {
-    sem_t *sem;
+    sem_t* sem;
     int fd;
-    char c = '1';
+    char symbol = '1';
+    int flag_exit = 0;
+    int i;
     
     // Create or open the named semaphore
     sem = sem_open(SEM_NAME, O_CREAT, 0644, 1);
@@ -29,26 +31,38 @@ int main() {
     }
     
     // Write 10 characters to the file and alternate with program 2
-    for (int i = 0; i < 10; i++) {
-        // Wait for the semaphore to be available
-        sem_wait(sem);
-        
-        // Write the character to the file
-        write(fd, &c, 1);
-        
-        // Write the character to the terminal
-        putchar(c);
-        fflush(stdout);
-        
-        // Release the semaphore
-        sem_post(sem);
-        
+   while (!flag_exit) {
+
+        if (sem_wait(sem) == -1) {
+            perror("Ошибка при захвате семафора");
+            exit(EXIT_FAILURE);
+        }
+
+        for (i = 0; i < 10; i++) {
+            write(fd, &symbol, 1);
+            putchar(symbol);
+            fflush(stdout);
+            sleep(1);
+        }
+
+        if (sem_post(sem) == -1) {
+            perror("Ошибка при освобождении семафора");
+            exit(EXIT_FAILURE);
+        }
+   
+        if (poll(fds, 1, 1000) > 0) {
+            flag_exit = 1;
+            printf("\nКлавиша нажата\n");
+            break;
+        }
         // Wait for a key press before continuing
         fd_set rfds;
         FD_ZERO(&rfds);
         FD_SET(STDIN_FILENO, &rfds);
         select(STDIN_FILENO + 1, &rfds, NULL, NULL, NULL);
+        sleep(1);
     }
+        
     
     // Close and unlink the semaphore
     sem_close(sem);
